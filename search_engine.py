@@ -13,6 +13,9 @@ class Words:
 		# TODO: clean up for readability?
 		return [i for i in re.split(" ", re.sub(self.REGEX, "", text.lower())) if i]
 
+	def get(self):
+		return self.words
+
 
 class Paths:
 	def __init__(self):
@@ -30,7 +33,7 @@ class Index:
 		# TODO: fix this! When trying to insert a duplicate key, new Paths obj replaces previous Paths obj...
 		# TODO: ...but instead, they should combine (how?)
 
-		aux_dict = {k: paths for k in words}
+		aux_dict = {k: paths for k in words.get()}
 		self.paths_per_word.update(aux_dict)
 
 
