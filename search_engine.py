@@ -1,6 +1,7 @@
 # TODO: add main comment here
 import os.path
 import re
+import sys
 
 
 class Words:
@@ -55,18 +56,30 @@ class Index:
 
 class Ranker:
 	PERCENTAGE = 100
+	MAX_MATCHES = 10
+	FORMAT = 25
 
 	def __init__(self):
 		self.ranking = {}
 
-	def get_rank(self, index, paths, words):
-		matches = index.get_matches(words)
-		transposed = transpose(paths, matches)
-		self.ranking = {key: (len(value) * self.PERCENTAGE / words.get_size()) for key, value in transposed.items()}
+	def rank(self, index, paths, words):
+		words_per_path = transpose(paths, index.get_matches(words))
+		self.calculate(words_per_path, words.get_size())
+		return self.get_ranking()
+
+	def calculate(self, words_per_path, word_count):
+		full_ranking = {key: (len(value) * self.PERCENTAGE / word_count) for key, value in words_per_path.items()}
+		self.ranking = dict(sorted(full_ranking.items(), key=lambda x: x[1], reverse=True)[:self.MAX_MATCHES])
+
+	def get_ranking(self):
 		return self.ranking
 
+	def print(self):
+		for path, rank in self.ranking.items():
+			print("..." + path[len(path) - self.FORMAT:] + ": " + str(int(rank)) + "%\n")
 
-def transpose(keys, original):  # TODO: optimize :(
+
+def transpose(keys, original):
 	transposed = {key: [] for key in keys}
 
 	for og_key, og_values in original.items():
@@ -80,9 +93,8 @@ def parse_textfile(absolute_path, filename, base_index):
 	paths = Paths()
 	paths.add_path(absolute_path)
 
-	# validate extension (file is textfile) and input path matching this project's path
-	if not filename.endswith((".txt", ".csv")) or filename == os.path.basename(__file__):
-		pass  # handling?
+	if not filename.endswith(".txt"):
+		raise ValueError("Invalid file {}!".format(filename))
 
 	# assuming textfile is in English
 	with open(absolute_path) as textfile:
@@ -105,17 +117,22 @@ def explore_directories(path, base_index, all_paths):
 	return base_index
 
 
-def main(path, input_text):  # delete input_text argument
-	if not path:
-		print("Missing path argument!")
-		return
+def main(argv):
+	if len(argv) <= 1:
+		raise ValueError("Missing path argument!")
 
 	base_index = Index()
 	all_paths = Paths()
 	ranker = Ranker()
 
-	explore_directories(path, base_index, all_paths)
-	ranker.get_rank(base_index, all_paths.get(), Words(input_text))
+	explore_directories(argv[1], base_index, all_paths)
+	input_text = input("Please enter any text to search, or an empty input to quit: ")
 
-	# print(ranker.get_rank(base_index, all_paths.get(), Words(input_text)))
-	# TODO: get input_text from terminal instead of argument
+	while input_text:
+		ranker.rank(base_index, all_paths.get(), Words(input_text))
+		ranker.print()
+		input_text = input("Please enter any text to search, or an empty input to quit: ")
+
+
+if __name__ == "__main__":
+	main(sys.argv)
