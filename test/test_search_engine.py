@@ -11,11 +11,13 @@ class TestSearchEngine(unittest.TestCase):
 		path_list = [TEST_PATH + "textfile3.txt", TEST_PATH + "textfile2.txt"]
 		input_text = "This is an uninteresting piece of input text"
 		dictionary = {"this": path_list, "is": path_list, "of": [path_list[0]], "text": path_list}
+		base_index = se.Index()
+		paths = se.Paths()
+		paths.add_path(path_list[0])
+		paths.add_path(path_list[1])
+		se.explore_directories(TEST_PATH, base_index, paths)
 
-		base_index = se.explore_directories(TEST_PATH)
-		index_result = base_index.get_subindex_with_words(se.Words(input_text))
-
-		self.assertEqual(index_result.get_as_dictionary(), dictionary)
+		self.assertEqual(base_index.get_matches(se.Words(input_text)), dictionary)
 
 
 if __name__ == '__main__':

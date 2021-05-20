@@ -16,6 +16,9 @@ class Words:
 	def get(self):
 		return self.words
 
+	def get_size(self):
+		return len(self.words)
+
 
 class Paths:
 	def __init__(self):
@@ -43,26 +46,37 @@ class Index:
 		for word in words.get():
 			self.paths_per_word.setdefault(word, Paths()).merge(paths)
 
-	def get_as_dictionary(self):
+	def get(self):
 		return {word: self.paths_per_word.get(word).get() for word in self.paths_per_word.keys()}
 
-	def print(self):
-		for word, paths in self.paths_per_word.items():
-			print(word, paths.get())
-
-	def create_from(self, dictionary):
-		self.paths_per_word = dictionary
-		return self
-
-	def get_subindex_with_words(self, words):
-		aux_dictionary = {word: self.paths_per_word.get(word) for word in words.get() if self.paths_per_word.get(word)}
-		return Index().create_from(aux_dictionary)
-
-# -------------------------------------------------------------------------------------------------------------
+	def get_matches(self, words):
+		return {word: self.paths_per_word.get(word).get() for word in words.get() if self.paths_per_word.get(word)}
 
 
-def parse_textfile(root, filename, base_index):
-	absolute_path = os.path.join(root, filename)
+class Ranker:
+	PERCENTAGE = 100
+
+	def __init__(self):
+		self.ranking = {}
+
+	def get_rank(self, index, paths, words):
+		matches = index.get_matches(words)
+		transposed = transpose(paths, matches)
+		self.ranking = {key: (len(value) * self.PERCENTAGE / words.get_size()) for key, value in transposed.items()}
+		return self.ranking
+
+
+def transpose(keys, original):  # TODO: optimize :(
+	transposed = {key: [] for key in keys}
+
+	for og_key, og_values in original.items():
+		for og_value in og_values:
+			transposed[og_value].append(og_key)
+
+	return transposed
+
+
+def parse_textfile(absolute_path, filename, base_index):
 	paths = Paths()
 	paths.add_path(absolute_path)
 
@@ -76,25 +90,32 @@ def parse_textfile(root, filename, base_index):
 			base_index.add(Words(line), paths)
 
 
-def explore_directories(path):
+def explore_directories(path, base_index, all_paths):
 	print("Indexing files...")
 	file_count = 0
-	base_index = Index()
 
 	for root, dirs, filenames in os.walk(path):
 		for filename in filenames:
-			parse_textfile(root, filename, base_index)
+			absolute_path = os.path.join(root, filename)
+			parse_textfile(absolute_path, filename, base_index)
+			all_paths.add_path(absolute_path)
 			file_count += 1
 
 	print("Done! {} files indexed.".format(file_count))
 	return base_index
 
 
-def main(path, input_text):  # remove input_text argument
+def main(path, input_text):  # delete input_text argument
 	if not path:
 		print("Missing path argument!")
 		return
 
-	base_index = explore_directories(path)
-	index_result = base_index.get_subindex_with_words(Words(input_text))
+	base_index = Index()
+	all_paths = Paths()
+	ranker = Ranker()
+
+	explore_directories(path, base_index, all_paths)
+	ranker.get_rank(base_index, all_paths.get(), Words(input_text))
+
+	# print(ranker.get_rank(base_index, all_paths.get(), Words(input_text)))
 	# TODO: get input_text from terminal instead of argument
