@@ -24,17 +24,36 @@ class Paths:
 	def add_path(self, path):
 		self.paths.append(path)
 
+	def add_paths(self, paths):
+		self.paths.extend([i for i in paths.get() if i not in self.paths])
+
+	def get(self):
+		return self.paths
+
+	def merge(self, paths):
+		self.add_paths(paths)
+		return self
+
 
 class Index:
 	def __init__(self):
-		self.paths_per_word = {}
+		self.paths_per_word = {}  # {string:Paths}
 
 	def add(self, words, paths):
-		# TODO: fix this! When trying to insert a duplicate key, new Paths obj replaces previous Paths obj...
-		# TODO: ...but instead, they should combine (how?)
+		for word in words.get():
+			self.paths_per_word.setdefault(word, Paths()).merge(paths)
 
-		aux_dict = {k: paths for k in words.get()}
-		self.paths_per_word.update(aux_dict)
+	def print(self):
+		for word, paths in self.paths_per_word.items():
+			print(word, paths.get())
+
+	def create_from(self, dictionary):
+		self.paths_per_word = dictionary
+		return self
+
+	def get_subindex_from_words(self, words):
+		aux_dictionary = {word: self.paths_per_word.get(word) for word in words.get() if self.paths_per_word.get(word)}
+		return Index().create_from(aux_dictionary)
 
 
 def parse_textfile(root, filename, base_index):
@@ -50,8 +69,6 @@ def parse_textfile(root, filename, base_index):
 	with open(absolute_path) as textfile:
 		for line in textfile:
 			base_index.add(Words(line), paths)
-
-	# return base_index?
 
 
 def explore_directories(path):
@@ -71,4 +88,9 @@ def explore_directories(path):
 def main(path, input_text):
 	# TODO: validate empty path: raise exception? quit?
 	base_index = explore_directories(path)
+	# base_index.print()
+	index_result = base_index.get_subindex_from_words(Words(input_text))
+	index_result.print()
 	# TODO: get input_text from terminal instead of argument
+
+
