@@ -1,4 +1,3 @@
-# TODO: add main comment here
 import os.path
 import sys
 
@@ -12,7 +11,6 @@ def parse_textfile(absolute_path, filename, base_index):
 	if not filename.endswith(".txt"):
 		raise ValueError("Invalid file {}!".format(filename))
 
-	# assuming textfile is in English
 	with open(absolute_path) as textfile:
 		for line in textfile:
 			base_index.add(Words(line), paths)
@@ -44,7 +42,7 @@ def main(argv):
 	explore_directories(argv[1], base_index, all_paths)
 	input_text = input("Please enter any text to search, or an empty input to quit: ")
 
-	while input_text:
+	while input_text and len(Words(input_text).get()) > 0:
 		ranker.rank(base_index, all_paths.get(), Words(input_text))
 		ranker.print()
 		input_text = input("Please enter any text to search, or an empty input to quit: ")

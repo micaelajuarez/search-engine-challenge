@@ -4,6 +4,7 @@ Command-line-driven text search engine made for a code challenge.
 ## Pre-requisites
 This program requires installation of Python 3.8+. 
 It should only be used to search .txt files written in English characters.
+Words should be separated by spaces to be read distinctively.
 
 ## Usage
 To run this program, a valid absolute path is needed as an argument, as per the next example:

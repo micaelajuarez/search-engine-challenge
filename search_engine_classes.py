@@ -73,7 +73,7 @@ class Ranker:
 
 	def print(self):
 		for path, rank in self.ranking.items():
-			print("..." + path[len(path) - self.FORMAT:] + ": " + str(int(rank)) + "%\n")
+			print("..." + path[len(path) - self.FORMAT:] + ": " + str(int(rank)) + "%")
 
 
 def transpose(keys, original):
