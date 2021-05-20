@@ -4,14 +4,14 @@ import re
 
 
 class Words:
-	REGEX = r"[^a-zA-Z ]"
+	REGEX = r"[^a-zA-Z ]"  # no letters nor spaces
 
 	def __init__(self, text):
 		self.words = self.get_words_from(text)
 
 	def get_words_from(self, text):
-		# TODO: clean up for readability?
-		return [i for i in re.split(" ", re.sub(self.REGEX, "", text.lower())) if i]
+		formatted_text = re.sub(self.REGEX, "", text.lower())
+		return [i for i in re.split(" ", formatted_text) if i]
 
 	def get(self):
 		return self.words
@@ -90,7 +90,5 @@ def main(path, input_text):
 	base_index = explore_directories(path)
 	# base_index.print()
 	index_result = base_index.get_subindex_from_words(Words(input_text))
-	index_result.print()
+	# index_result.print()
 	# TODO: get input_text from terminal instead of argument
-
-
