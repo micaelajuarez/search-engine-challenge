@@ -1,7 +1,6 @@
 import unittest
 import search_engine as se
 
-
 # Unit tests for classes Words, Paths, Index
 
 

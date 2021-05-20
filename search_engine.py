@@ -43,6 +43,9 @@ class Index:
 		for word in words.get():
 			self.paths_per_word.setdefault(word, Paths()).merge(paths)
 
+	def get_as_dictionary(self):
+		return {word: self.paths_per_word.get(word).get() for word in self.paths_per_word.keys()}
+
 	def print(self):
 		for word, paths in self.paths_per_word.items():
 			print(word, paths.get())
@@ -51,9 +54,11 @@ class Index:
 		self.paths_per_word = dictionary
 		return self
 
-	def get_subindex_from_words(self, words):
+	def get_subindex_with_words(self, words):
 		aux_dictionary = {word: self.paths_per_word.get(word) for word in words.get() if self.paths_per_word.get(word)}
 		return Index().create_from(aux_dictionary)
+
+# -------------------------------------------------------------------------------------------------------------
 
 
 def parse_textfile(root, filename, base_index):
@@ -85,10 +90,11 @@ def explore_directories(path):
 	return base_index
 
 
-def main(path, input_text):
-	# TODO: validate empty path: raise exception? quit?
+def main(path, input_text):  # remove input_text argument
+	if not path:
+		print("Missing path argument!")
+		return
+
 	base_index = explore_directories(path)
-	# base_index.print()
-	index_result = base_index.get_subindex_from_words(Words(input_text))
-	# index_result.print()
+	index_result = base_index.get_subindex_with_words(Words(input_text))
 	# TODO: get input_text from terminal instead of argument
